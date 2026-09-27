@@ -1,0 +1,34 @@
+{
+  "expo": {
+    "name": "Zyora Demo",
+    "slug": "zyora-mobile-mvp",
+    "version": "0.4.1",
+    "orientation": "portrait",
+    "icon": "./assets/zyora-icon.png",
+    "userInterfaceStyle": "dark",
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "cc.zyora.mvp"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0D0C12"
+      },
+      "package": "cc.zyora.mvp"
+    },
+    "web": {
+      "favicon": "./assets/zyora-icon.png"
+    },
+    "plugins": [
+      "expo-sharing",
+      "expo-status-bar",
+      "expo-font",
+      ["expo-splash-screen", {
+        "image": "./assets/zyora-icon.png",
+        "backgroundColor": "#0D0C12",
+        "imageWidth": 200
+      }]
+    ]
+  }
+}
