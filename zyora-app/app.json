@@ -1,14 +1,17 @@
 {
   "expo": {
-    "name": "Zyora Demo",
+    "name": "Zyora",
     "slug": "zyora-mobile-mvp",
-    "version": "0.4.1",
+    "version": "0.5.0",
     "orientation": "portrait",
     "icon": "./assets/zyora-icon.png",
     "userInterfaceStyle": "dark",
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "cc.zyora.mvp"
+      "bundleIdentifier": "cc.zyora.mvp",
+      "infoPlist": {
+        "CADisableMinimumFrameDurationOnPhone": true
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -18,17 +21,24 @@
       "package": "cc.zyora.mvp"
     },
     "web": {
-      "favicon": "./assets/zyora-icon.png"
+      "favicon": "./assets/zyora-icon.png",
+      "bundler": "metro",
+      "output": "single"
     },
     "plugins": [
       "expo-sharing",
       "expo-status-bar",
       "expo-font",
-      ["expo-splash-screen", {
-        "image": "./assets/zyora-icon.png",
-        "backgroundColor": "#0D0C12",
-        "imageWidth": 200
-      }]
-    ]
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/zyora-icon.png",
+          "backgroundColor": "#0D0C12",
+          "imageWidth": 200
+        }
+      ],
+      "expo-router"
+    ],
+    "scheme": "zyora"
   }
 }

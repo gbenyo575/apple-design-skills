@@ -6,7 +6,7 @@ import * as Sharing from 'expo-sharing';
 const LOG_STORAGE_KEY = '@zyora/structured-logs-v1';
 const MAX_EVENTS = 5000;
 const SCHEMA_VERSION = 1;
-const APP_VERSION = '0.4.0';
+const APP_VERSION = '0.5.0';
 const FORBIDDEN_KEYS = /(code|password|secret|token|raw|content|statement|merchant|description|email|phone|amount|balance)/i;
 
 let initialized = false;
@@ -35,10 +35,18 @@ function sanitizeProperties(input) {
   }, {});
 }
 
-async function persist() {
+// Writes are debounced: serialising up to 5 000 events on every tap or
+// slider tick used to block the JS thread mid-gesture.
+let persistTimer = null;
+function writeNow() {
   const payload = JSON.stringify(events.slice(-MAX_EVENTS));
   persistChain = persistChain.then(() => AsyncStorage.setItem(LOG_STORAGE_KEY, payload)).catch(() => null);
   return persistChain;
+}
+
+function persist() {
+  clearTimeout(persistTimer);
+  persistTimer = setTimeout(writeNow, 1500);
 }
 
 export async function initializeLogger() {
@@ -71,7 +79,7 @@ export async function logEvent(event, options = {}) {
     schemaVersion: SCHEMA_VERSION,
   };
   events = [...events.slice(-(MAX_EVENTS - 1)), record];
-  await persist();
+  persist();
   return record;
 }
 
@@ -83,13 +91,14 @@ export async function exportStructuredLogs() {
   await initializeLogger();
   await logEvent('logs.export_requested', { screen: 'settings', action: 'export' });
   const stamp = new Date().toISOString().replace(/[:.]/g, '-');
-  const file = new File(Paths.cache, `zyora-v0.4.0-${stamp}.jsonl`);
+  await writeNow();
+  const file = new File(Paths.cache, `zyora-v${APP_VERSION}-${stamp}.jsonl`);
   if (file.exists) file.delete();
   file.create({ overwrite: true, intermediates: true });
   file.write(`${events.map(item => JSON.stringify(item)).join('\n')}\n`);
-  if (!(await Sharing.isAvailableAsync())) throw new Error('A megosztás ezen az eszközön nem érhető el.');
+  if (!(await Sharing.isAvailableAsync())) throw new Error('sharing-unavailable');
   await Sharing.shareAsync(file.uri, {
-    dialogTitle: 'Zyora strukturált napló exportálása',
+    dialogTitle: 'Zyora diagnostic log',
     mimeType: 'application/x-ndjson',
     UTI: 'public.json',
   });
@@ -99,6 +108,7 @@ export async function exportStructuredLogs() {
 export async function clearStructuredLogs() {
   events = [];
   sequence = 0;
+  clearTimeout(persistTimer);
   await AsyncStorage.removeItem(LOG_STORAGE_KEY).catch(() => null);
   await logEvent('logs.cleared', { screen: 'settings', action: 'clear' });
 }
